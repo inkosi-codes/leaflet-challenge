@@ -94,21 +94,20 @@ function getColor(d) {
 
 function createMarkers(response) {
 
-  // Pull the "stations" property off of response.data
-  var stations = response.features;
+  var markers = response.features;
 
 
-  // Initialize an array to hold bike markers
+  // Initialize an array to hold markers
   var originMarkers = [];
 
-  // Loop through the stations array
-  for (var index = 0; index < stations.length; index++) {
-    var station = stations[index];
-    coordinates = [station.geometry.coordinates[1], station.geometry.coordinates[0]]
+  // Loop through the markers array
+  for (var index = 0; index < markers.length; index++) {
+    var events = markers[index];
+    coordinates = [events.geometry.coordinates[1], events.geometry.coordinates[0]]
 
     options = {
-      radius: station.properties.mag * 4,
-      fillColor: getColor(station.properties.mag),
+      radius: events.properties.mag * 4,
+      fillColor: getColor(events.properties.mag),
       color: "black",
       weight: .5,
       opacity: 1,
@@ -117,7 +116,7 @@ function createMarkers(response) {
 
     // For each record, create a marker and bind a popup with the earthquake data
     var originMarker = L.circleMarker(coordinates, options)
-      .bindPopup("<h3>Location:" + station.properties.place + "</h3><h3>Magnitude: " + station.properties.mag + "</h3><h3 style='overflow-wrap: anywhere;'>Get More Info: " + "<a href=" + "'" + station.properties.url + "' target='_blank'>Click to Visit Site</a>" + "</h3>");
+      .bindPopup("<h3>Location:" + events.properties.place + "</h3><h3>Magnitude: " + events.properties.mag + "</h3><h3 style='overflow-wrap: anywhere;'>Get More Info: " + "<a href=" + "'" + events.properties.url + "' target='_blank'>Click to Visit Site</a>" + "</h3>");
 
     // Add the marker to the originMarkers array
     originMarkers.push(originMarker);
@@ -128,5 +127,5 @@ function createMarkers(response) {
 }
 
 
-// Perform an API call to the Citi Bike API to get station information. Call createMarkers when complete
+// Perform an API call to the Citi Bike API to get events information. Call createMarkers when complete
 d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson", createMarkers);
