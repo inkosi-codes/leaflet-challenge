@@ -51,7 +51,7 @@ function createMap(earthquakes) {
   var map = L.map("map-id", {
     center: [0.000000, 0.000000],
     zoom: 3,
-    layers: [satmap, earthquakes]
+    layers: [OpenStreetMap_Mapnik, earthquakes]
 
   });
 
