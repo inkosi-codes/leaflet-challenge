@@ -23,13 +23,13 @@ function createMap(earthquakes) {
   });
 
   var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-	attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-});
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+  });
 
-var OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	maxZoom: 5,
-	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-});
+  var OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 5,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  });
 
 
 
@@ -52,7 +52,28 @@ var OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{
     center: [0.000000, 0.000000],
     zoom: 3,
     layers: [satmap, earthquakes]
+
   });
+
+  var legend = L.control({ position: 'bottomright' });
+
+  legend.onAdd = function (map) {
+
+    var div = L.DomUtil.create('div', 'info legend'),
+      grades = [-1,.9,1.9,2.9,3.9,4.9],
+      labels = [];
+
+    // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < grades.length; i++) {
+      div.innerHTML +=
+        '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+    }
+
+    return div;
+  };
+
+  legend.addTo(map);
 
   // Create a layer control, pass in the baseMaps and overlayMaps. Add the layer control to the map
   L.control.layers(baseMaps, overlayMaps, {
@@ -60,11 +81,22 @@ var OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{
   }).addTo(map);
 }
 
+function getColor(d) {
+  return d < 1 ? '#309143' :
+    d < 2 ? '#8ACE7E' :
+      d < 3 ? '#FFDA66' :
+        d < 4 ? '#E39802' :
+          d < 5 ? '#FF684C' :
+            '#B60A1C';
+}
+
+
+
 function createMarkers(response) {
 
   // Pull the "stations" property off of response.data
   var stations = response.features;
-  console.log(stations)
+
 
   // Initialize an array to hold bike markers
   var originMarkers = [];
@@ -73,10 +105,19 @@ function createMarkers(response) {
   for (var index = 0; index < stations.length; index++) {
     var station = stations[index];
     coordinates = [station.geometry.coordinates[1], station.geometry.coordinates[0]]
-    //console.log(coordinates)
+
+    options = {
+      radius: station.properties.mag * 4,
+      fillColor: getColor(station.properties.mag),
+      color: "black",
+      weight: .5,
+      opacity: 1,
+      fillOpacity: 0.6
+    }
+
     // For each record, create a marker and bind a popup with the earthquake data
-    var originMarker = L.marker(coordinates)
-      .bindPopup("<h3>Location:" + station.properties.place + "</h3><h3>Magnitude: " + station.properties.mag + "</h3><h3 style='overflow-wrap: anywhere;'>Get More Info: " + "<a href=" + "'" + station.properties.url +"' target='_blank'>Click to Visit Site</a>"+ "</h3>");
+    var originMarker = L.circleMarker(coordinates, options)
+      .bindPopup("<h3>Location:" + station.properties.place + "</h3><h3>Magnitude: " + station.properties.mag + "</h3><h3 style='overflow-wrap: anywhere;'>Get More Info: " + "<a href=" + "'" + station.properties.url + "' target='_blank'>Click to Visit Site</a>" + "</h3>");
 
     // Add the marker to the originMarkers array
     originMarkers.push(originMarker);
